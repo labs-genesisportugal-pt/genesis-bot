@@ -1,78 +1,88 @@
 "use client";
 
-import { sendEmbed } from "@/app/actions/discord";
-import { Field, FieldLabel, FieldDescription, FieldError, FieldGroup } from "@/components/ui/field";
+import { getStarboardSettings, saveStarboardSettings } from "@/app/actions/starboard";
+import { Field, FieldLabel, FieldError, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { decodeEmbedUrl } from "@genesis/core";
-
 import { Guild } from "@/lib/types";
-import { TbInfoCircle } from "react-icons/tb";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import ChannelSelect from "@/app/dashboard/_components/channel-select";
 
 const formSchema = z.object({
-  embedUrl: z.string().url({ message: "URL inválida" }),
   channelId: z.string().min(1, { message: "Selecione um canal" }),
+  threshold: z.coerce.number().int().min(1, { message: "O mínimo é 1 estrela" }),
 });
 
-export default function Embeds({ guild }: { guild: Guild }) {
+export default function Starboard({ guild }: { guild: Guild }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      embedUrl: "",
       channelId: "",
+      threshold: 1,
     },
   });
 
+  useEffect(() => {
+    getStarboardSettings(guild.id).then((settings) => {
+      if (settings) {
+        form.reset({
+          channelId: settings.channel_id,
+          threshold: settings.threshold,
+        });
+      }
+    });
+  }, [guild.id, form]);
+
   const onSubmit = () => {
     return form.handleSubmit(async (data) => {
-      try {
-        const embedData = decodeEmbedUrl(data.embedUrl);
-        sendEmbed(data.channelId, embedData);
-      } catch (error) {
-        console.error("Erro ao enviar o embed:", error);
-      }
+      await saveStarboardSettings(guild.id, {
+        channel_id: data.channelId,
+        threshold: data.threshold,
+      });
+      window.location.reload();
     });
   };
 
   return (
-    <form onSubmit={onSubmit()} id="embed" className="flex flex-col gap-4">
+    <form onSubmit={onSubmit()} className="flex flex-col gap-4">
       <FieldGroup className="flex flex-row gap-4">
+        <ChannelSelect
+          guildId={guild.id}
+          form={form}
+          label={
+            <>
+              Canal de Starboard
+            </>
+          }
+        />
         <Controller
-          name="embedUrl"
+          name="threshold"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor={field.name}>
-                URL do Embed
-                <TbInfoCircle className="inline-block" />
+                Número mínimo de estrelas
               </FieldLabel>
               <Input
                 {...field}
                 id={field.name}
+                type="number"
+                min={1}
                 aria-invalid={fieldState.invalid}
-                placeholder="https://glitchii.github.io/embedbuilder/?data=..."
                 autoComplete="off"
-              ></Input>
-              <FieldDescription>Link do embed gerado.</FieldDescription>
+                className="w-32"
+              />
               {fieldState.error && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
         />
-        <ChannelSelect
-          guildId={guild.id}
-          form={form}
-          description="Canal onde o embed será enviado."
-        />
       </FieldGroup>
       <Field>
-        <Button type="submit" form="embed">
-          Enviar
-        </Button>
+        <Button type="submit">Guardar</Button>
       </Field>
     </form>
   );

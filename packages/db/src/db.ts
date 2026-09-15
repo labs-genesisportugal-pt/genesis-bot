@@ -65,3 +65,22 @@ db.exec(`
    PRIMARY KEY (guild_id, trigger_id)
   )
 `);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS starboard_posts (
+    guild_id TEXT NOT NULL,
+    message_id TEXT NOT NULL,
+    starboard_message_id TEXT NOT NULL,
+    last_star_count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (guild_id, message_id)
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS starboard_settings (
+    guild_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL DEFAULT '',
+    threshold INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (guild_id)
+  )
+`);

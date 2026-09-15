@@ -47,7 +47,6 @@ async function processTextMessage(message: Message) {
   }
 
   const now = message.createdTimestamp || Date.now();
-  await maybeCleanupExpiredTextSessions(now);
 
   const guildId = message.guild.id;
   const userId = message.author.id;
@@ -55,22 +54,6 @@ async function processTextMessage(message: Message) {
   let session = textSessions.get(key);
 
   if (!session) {
-    textSessions.set(key, {
-      guildId,
-      userId,
-      startAt: now,
-      lastMsgAt: now,
-      checkpointIndex: 0,
-      msgsInInterval: 1,
-      xpPending: 0,
-    });
-    return;
-  }
-
-  const inactive = now - session.lastMsgAt > TEXT_INACTIVITY_TIMEOUT_MS;
-
-  if (inactive) {
-    await closeTextSession(session, false);
     textSessions.set(key, {
       guildId,
       userId,
@@ -111,6 +94,24 @@ async function processTextMessage(message: Message) {
 
   session.msgsInInterval += 1;
   session.lastMsgAt = now;
+
+  const inactive = now - session.lastMsgAt > TEXT_INACTIVITY_TIMEOUT_MS;
+
+  if (inactive) {
+    await closeTextSession(session, false);
+    textSessions.set(key, {
+      guildId,
+      userId,
+      startAt: now,
+      lastMsgAt: now,
+      checkpointIndex: 0,
+      msgsInInterval: 1,
+      xpPending: 0,
+    });
+    return;
+  }
+
+  await maybeCleanupExpiredTextSessions(now);
 }
 
 async function maybeCleanupExpiredTextSessions(now = Date.now()) {

@@ -3,3 +3,8 @@ export type Trigger = {
   content: string;
   allowed_roles: string[];
 };
+
+export type StarboardSettings = {
+  channel_id: string;
+  threshold: number;
+};

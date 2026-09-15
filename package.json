@@ -9,6 +9,9 @@
     "dev": "pnpm -r dev",
     "bot:dev": "pnpm --filter @genesis/bot dev",
     "bot:build": "pnpm --filter @genesis/bot build",
+    "bot:test": "pnpm --filter @genesis/bot test",
+    "test": "pnpm -r test",
+    "test:watch": "pnpm -r test:watch",
     "dashboard:dev": "pnpm --filter @genesis/dashboard dev --turbopack",
     "dashboard:build": "pnpm --filter @genesis/dashboard build",
     "packages:build": "pnpm --filter @genesis/core build && pnpm --filter @genesis/db build && pnpm --filter @genesis/services build"

@@ -8,6 +8,8 @@
   "scripts": {
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "build": "tsc",
     "start": "node dist/src/index.js",
     "previewCard": "tsx watch src/utils/previewCard.ts & sleep 2 && feh -R 1 src/utils/preview.png"
@@ -29,6 +31,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.1",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "4.1.10"
   }
 }
