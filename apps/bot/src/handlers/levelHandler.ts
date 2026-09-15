@@ -19,8 +19,12 @@ function handleLevelUpNotification(message: Message) {
 function handleRoleUpdate(message: Message) {
   if (!message.guildId || !message.member) return;
 
-  const level = calculateLevel(xpDb.getUserXp(message.guildId, message.author.id).textXp);
-  const correctRole = levelDb.getRoleByLevel(message.guildId, level);
+  const textLevel = calculateLevel(xpDb.getUserXp(message.guildId, message.author.id).textXp);
+  const voiceLevel = calculateLevel(xpDb.getUserXp(message.guildId, message.author.id).voiceXp);
+  const correctRole = levelDb.getRoleByLevel(
+    message.guildId,
+    textLevel > voiceLevel ? textLevel : voiceLevel,
+  );
   const currentRole = levelDb.getCurrentLevelRole(
     message.guildId,
     message.member.roles.cache.map((r) => r.id),

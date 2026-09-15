@@ -3,9 +3,12 @@ import bg_tex from "../assets/bg_tex.jpg";
 import logo from "../assets/genesisportugal_logo.svg";
 import DiscordLogin from "./_components/discordlogin";
 import DashboardButton from "./_components/dashboardbutton";
-import LoggedIn from "./_components/LoggedIn";
+import { auth } from "./auth";
+import { headers } from "next/headers";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+
   return (
     <div className="flex h-[calc(100vh-(var(--spacing)*20))] items-center mx-30">
       <Image
@@ -35,7 +38,7 @@ export default function Home() {
             Genesis Portugal.
           </p>
         </div>
-        <LoggedIn is={<DashboardButton />} isnot={<DiscordLogin />} />
+        {session && session.user ? <DashboardButton /> : <DiscordLogin />}
       </div>
     </div>
   );
